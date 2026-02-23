@@ -1,0 +1,49 @@
+# ──────────────────────────────────────────────────────
+# Daily Allergy Alert — GitHub Actions Workflow
+#
+# Runs Monday–Friday at 8:00 AM CT (14:00 UTC) during
+# allergy season (April–October). Scrapes ASAP Illinois
+# for Chicago pollen data and sends an email alert.
+#
+# The season check is also built into the Python script
+# itself, so even if this workflow fires outside of
+# season it will exit gracefully.
+# ──────────────────────────────────────────────────────
+
+name: Daily Allergy Alert
+
+on:
+  # Run at 8:00 AM Chicago time (CT = UTC-5 / CDT = UTC-6)
+  # Using UTC 13:00 to cover both CST and CDT
+  schedule:
+    - cron: "0 13 * * 1-5" # Mon–Fri at 13:00 UTC (~8 AM CT)
+
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  send-alert:
+    runs-on: ubuntu-latest
+    # No job-level season filter here — the Python script already checks
+    # the month and exits cleanly outside April–October.
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run daily alert
+        env:
+          SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          ALERT_RECIPIENT: ${{ secrets.ALERT_RECIPIENT }}
+        run: |
+          cd daily_alert
+          python main.py
