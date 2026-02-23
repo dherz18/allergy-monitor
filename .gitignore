@@ -27,12 +27,9 @@ env/
 .DS_Store
 Thumbs.db
 
-# Project data cache (large CSVs and generated charts)
+# Large CSV data files (regenerable via notebook)
 analysis/data/*.csv
-analysis/data/*.png
-
-# Root data folder (large CSVs and generated charts)
-data/
+data/*.csv
 
 # Output charts (regenerable)
 output/
